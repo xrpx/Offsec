@@ -16,6 +16,7 @@ The script will store output in a CSV file with filename *shodan_results_timesta
 
 Syntax:
 > python3 fingerprintMe.py
+
 > Enter the search term:
 
 The script will store output in a CSV file with filename *arin_timestamp.csv*
