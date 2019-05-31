@@ -3,6 +3,7 @@
 # Author:		xrpx
 # Description:		Script to generate AWS MFA token and execute a set of commands
 # Last Modified:	August 18, 2014
+# Dependencies:     AWS command line tools
 
 function aws_mfa {
     if [[ -z "$AWS_ACCESS_KEY" ]] ; then

@@ -2,17 +2,16 @@
 
 # Author:		xrpx
 # Description:		Passive scan IP address/ range using shodan.io
-# Last modified: 	May 30, 2019
-
-# Dependencies
-# pip3 install shodan, netaddr
+# Last modified: 	May 31, 2019
+# Dependencies:     pip3 install shodan, netaddr
+# Usage:        > 'python3 reconIP.py filename.txt' where filename.txt contains CIDR formatted subnets to scan
 
 import shodan, sys, csv, os, time
 from netaddr import IPAddress, IPNetwork
 
 # Initiate session with API key
 ########## CONFIGURATION ZONE ###########
-api_key='SHODAN KEY HERE'
+api_key='YOUR_API_KEY_HERE'
 #########################################
 api = shodan.Shodan(api_key)
 
@@ -21,19 +20,24 @@ timestamp = str(time.time())
 filename = 'shodan_results_' + timestamp + '.csv'
 
 
-def write_csv(combined_res,filename):
+def write_csv(ipinfo,filename):
     # Export data as csv
     if os.path.exists(filename):
-        append_write = 'a' # append if already exists
+        # Append if file exists
+        append_write = 'a'
+
+        with open(filename, append_write) as f:
+            w = csv.DictWriter(f, ['ip_str', 'hostnames', 'ports'], extrasaction='ignore')
+            w.writerow(ipinfo)
+
     else:
-        append_write = 'w' # make a new file if not
-
-    with open(filename, append_write, newline='') as f:
-        writer = csv.writer(f)
-        writer.writerows(combined_res)
-
-    f.close()
-
+        # Or create new file with headers
+        append_write = 'w'
+    
+        with open(filename, append_write) as f:
+            w = csv.DictWriter(f, ['ip_str', 'hostnames', 'ports'], extrasaction='ignore')
+            w.writeheader()
+            w.writerow(ipinfo)
 
 def lookups(ip, filename):
     try:
@@ -45,24 +49,15 @@ def lookups(ip, filename):
 # Continue execution upon 'IP not found' exception
             try:
                 ipinfo = api.host(ip_str)
-                hostnames = ipinfo.get('hostnames')
-                hostnames = str(hostnames).replace(', ', '/')
-                hostnames = [hostnames]
+                write_csv(ipinfo, filename)
 
-                ports = ipinfo.get('ports')
-                ports = str(ports).replace(', ', '/')
-                ports = [ports]
-
-                combined_res = zip(ip_str, hostnames, ports)
-                
-                write_csv(combined_res, filename)
             except shodan.APIError:
                 pass
 
     except Exception as e:
             print('Error: {}'.format(e))
-# Elaborate code for debug
-#           print('Error! Code: {c}, Message, {m}'.format(c = type(e).__name__, m = str(e)))
+# Uncomment to debug
+#            print('Error! Code: {c}, Message, {m}'.format(c = type(e).__name__, m = str(e)))
         
 
 ##### MAIN #####
